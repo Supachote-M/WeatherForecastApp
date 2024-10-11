@@ -16,6 +16,7 @@
 
 package com.weatherforecastapp.data
 
+import com.weatherforecastapp.data.api.WeatherForecastApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import com.weatherforecastapp.data.local.database.WeatherData
 import com.weatherforecastapp.data.local.database.WeatherDataDao
+import com.weatherforecastapp.data.models.weatherforecast.WeatherForecastResponse
+import retrofit2.Call
 
 /**
  * Unit tests for [DefaultWeatherDataRepository].
@@ -34,7 +37,7 @@ class DefaultWeatherDataRepositoryTest {
 
     @Test
     fun weatherDatas_newItemSaved_itemIsReturned() = runTest {
-        val repository = DefaultWeatherDataRepository(FakeWeatherDataDao())
+        val repository = DefaultWeatherDataRepository(FakeWeatherDataDao(), FakeWeatherForecastApi())
 
         repository.add("Repository")
 
@@ -54,4 +57,16 @@ private class FakeWeatherDataDao : WeatherDataDao {
     override suspend fun insertWeatherData(item: WeatherData) {
         data.add(0, item)
     }
+}
+
+private class FakeWeatherForecastApi : WeatherForecastApi {
+
+    override fun getCurrentWeatherForecast(
+        appID: String,
+        q: String,
+        units: String
+    ): Call<WeatherForecastResponse> {
+        TODO("Not yet implemented")
+    }
+
 }

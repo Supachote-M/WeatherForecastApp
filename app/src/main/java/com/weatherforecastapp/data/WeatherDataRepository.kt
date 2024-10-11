@@ -16,26 +16,21 @@
 
 package com.weatherforecastapp.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import com.weatherforecastapp.data.local.database.WeatherData
-import com.weatherforecastapp.data.local.database.WeatherDataDao
+import com.weatherforecastapp.data.api.WeatherForecastApi
+import com.weatherforecastapp.data.models.weatherforecast.WeatherForecastRequest
+import com.weatherforecastapp.data.models.weatherforecast.WeatherForecastResponse
+import retrofit2.Call
 import javax.inject.Inject
 
 interface WeatherDataRepository {
-    val weatherDatas: Flow<List<String>>
-
-    suspend fun add(name: String)
+    fun getWeatherDataFromCity(request: WeatherForecastRequest): Call<WeatherForecastResponse>
 }
 
 class DefaultWeatherDataRepository @Inject constructor(
-    private val weatherDataDao: WeatherDataDao
+    private val weatherForecastApi: WeatherForecastApi
 ) : WeatherDataRepository {
 
-    override val weatherDatas: Flow<List<String>> =
-        weatherDataDao.getWeatherDatas().map { items -> items.map { it.name } }
-
-    override suspend fun add(name: String) {
-        weatherDataDao.insertWeatherData(WeatherData(name = name))
+    override fun getWeatherDataFromCity(request: WeatherForecastRequest): Call<WeatherForecastResponse> {
+        return weatherForecastApi.getCurrentWeatherForecast(request.APPID, request.q, request.units)
     }
 }

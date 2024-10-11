@@ -22,56 +22,91 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.weatherforecastapp.data.models.weatherforecast.WeatherForecastResponse
 
 @Composable
 fun WeatherDataScreen(modifier: Modifier = Modifier, viewModel: WeatherDataViewModel = hiltViewModel()) {
-    val items by viewModel.uiState.collectAsStateWithLifecycle()
-    if (items is WeatherDataUiState.Success) {
-        WeatherDataScreen(
-            items = (items as WeatherDataUiState.Success).data,
-            onSave = viewModel::addWeatherData,
-            modifier = modifier
-        )
-    }
+
+    val uiState by viewModel.uiState.collectAsState()
+    val forecastData = viewModel.forecastData.observeAsState()
+
+    WeatherDataScreen(
+        forecastData = forecastData,
+        uiState = uiState,
+        onClick = viewModel::getWeatherData,
+    )
 }
 
 @Composable
 internal fun WeatherDataScreen(
-    items: List<String>,
-    onSave: (name: String) -> Unit,
-    modifier: Modifier = Modifier
+    forecastData: State<WeatherForecastResponse?>,
+    uiState: WeatherForecastUiState,
+    onClick: (name: String) -> Unit,
 ) {
-    Column(modifier) {
-        var nameWeatherData by remember { mutableStateOf("Compose") }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(top = 24.dp, start = 12.dp, end = 12.dp, bottom = 24.dp)
+    ) {
+        var cityName by remember { mutableStateOf("") }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TextField(
-                value = nameWeatherData,
-                onValueChange = { nameWeatherData = it }
+                modifier = Modifier.weight(7f),
+                value = cityName,
+                onValueChange = { cityName = it }
             )
 
-            Button(modifier = Modifier.width(96.dp), onClick = { onSave(nameWeatherData) }) {
-                Text("Save")
+            Button(
+                modifier = Modifier.weight(3f),
+                onClick = { onClick(cityName) }) {
+                Text("Forecast")
             }
         }
-        items.forEach {
-            Text("Saved item: $it")
+        when(uiState) {
+            is WeatherForecastUiState.NoData -> {}
+            is WeatherForecastUiState.Success -> {
+                Text(
+                    text = "Temperature : ${forecastData.value?.main?.temp}",
+                    fontSize = 20.sp
+                )
+                Text(
+                    text = "Humidity : ${forecastData.value?.main?.humidity}",
+                    fontSize = 20.sp
+                )
+                Text(
+                    text = "Description : ${forecastData.value?.weather?.first()?.description}",
+                    fontSize = 20.sp
+                )
+            }
+            is WeatherForecastUiState.Error -> {
+                Text(
+                    text = uiState.msg,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontSize = 25.sp
+                )
+            }
         }
     }
 }
@@ -82,7 +117,7 @@ internal fun WeatherDataScreen(
 @Composable
 private fun DefaultPreview() {
     MyApplicationTheme {
-        WeatherDataScreen(listOf("Compose", "Room", "Kotlin"), onSave = {})
+        WeatherDataScreen()
     }
 }
 
@@ -90,6 +125,6 @@ private fun DefaultPreview() {
 @Composable
 private fun PortraitPreview() {
     MyApplicationTheme {
-        WeatherDataScreen(listOf("Compose", "Room", "Kotlin"), onSave = {})
+        WeatherDataScreen()
     }
 }

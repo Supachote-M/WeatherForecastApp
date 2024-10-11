@@ -20,11 +20,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import com.weatherforecastapp.data.WeatherDataRepository
 import com.weatherforecastapp.data.DefaultWeatherDataRepository
-import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
@@ -37,13 +34,3 @@ interface DataModule {
         weatherDataRepository: DefaultWeatherDataRepository
     ): WeatherDataRepository
 }
-
-class FakeWeatherDataRepository @Inject constructor() : WeatherDataRepository {
-    override val weatherDatas: Flow<List<String>> = flowOf(fakeWeatherDatas)
-
-    override suspend fun add(name: String) {
-        throw NotImplementedError()
-    }
-}
-
-val fakeWeatherDatas = listOf("One", "Two", "Three")

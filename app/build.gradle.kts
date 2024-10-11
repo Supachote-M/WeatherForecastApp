@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.hilt.gradle)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.parcelize)
 }
 
 android {
@@ -50,6 +51,12 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/\"")
+            buildConfigField("String", "API_KEY", "\"d0a2b09ceaf0299a201513076ec138b9\"")
+        }
+        getByName("debug")  {
+            buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/\"")
+            buildConfigField("String", "API_KEY", "\"d0a2b09ceaf0299a201513076ec138b9\"")
         }
     }
 
@@ -68,6 +75,7 @@ android {
         buildConfig = false
         renderScript = false
         shaders = false
+        buildConfig = true
     }
 
     packagingOptions {
@@ -98,6 +106,12 @@ dependencies {
     testImplementation(libs.hilt.android.testing)
     kaptTest(libs.hilt.android.compiler)
 
+    //retrofit2
+    implementation(libs.retrofit2)
+
+    //gson converter by retrofit
+    implementation(libs.retrofit2.gson)
+
     // Arch Components
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -111,6 +125,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime.livedata)
     // Tooling
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Instrumented tests
